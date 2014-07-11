@@ -96,7 +96,8 @@ h1.title {
   content: "Best"; }
 
 .slot-container:after{
-  content: "Slot";
+  counter-increment: slot;
+  content: "Slot" counter(slot);
 }
 
 .slot-container:hover{
@@ -106,7 +107,8 @@ h1.title {
 p {
   margin-top: 0;
   margin-bottom: 10px;
-  line-height: 1.65; }
+  line-height: 1.65;
+  counter-reset:slot; }
 
 a {
   color: #776e65;

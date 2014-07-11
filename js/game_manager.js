@@ -9,6 +9,7 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
   this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
+  this.inputManager.on("slotPressed", this.slotPressed.bind(this));
 
   this.setup();
 }
@@ -53,10 +54,54 @@ GameManager.prototype.setup = function () {
     // Add the initial tiles
     this.addStartTiles();
   }
-
+  this.setupSlots();
   // Update the actuator
   this.actuate();
 };
+
+GameManager.prototype.setupSlots = function (){
+  var slots = document.querySelectorAll(".slot-container");
+  for (var i = 0; i < slots.length; i++) {
+    var savedState = this.storageManager.restoreGameStage(i+1);
+    if (savedState) {
+      slots[i].textContent = savedState.score;
+    };
+  };
+};
+
+//similar to actute but save state to seprate slot for restore
+GameManager.prototype.save = function (slot_index) {
+  this.storageManager.saveGameState(slot_index, this.serialize());
+  var slot_elem_index = parseInt(slot_index)-1;
+  var slot_elem = document.querySelectorAll(".slot-container")[slot_elem_index];
+  slot_elem.textContent = this.score;
+};
+
+//similar to setup with previous state
+GameManager.prototype.restore = function (slot_index){
+  var savedState = this.storageManager.restoreGameStage(slot_index);
+  if (savedState) {
+    this.grid        = new Grid(savedState.grid.size,
+                       savedState.grid.cells);
+    this.score       = savedState.score;
+    this.over        = savedState.over;
+    this.won         = savedState.won;
+    this.keepPlaying = savedState.keepPlaying;
+    this.actuate();
+  };
+};
+
+GameManager.prototype.slotPressed = function (slot_index){
+  if (this.storageManager.slotUsed(slot_index)) {
+    if(confirm("覆盖现有存档？")){
+      this.save(slot_index);
+    }else if(confirm("读取存档")){
+      this.restore(slot_index);
+    }
+  }else{
+    this.save(slot_index);
+  }
+}
 
 // Set up the initial tiles to start the game with
 GameManager.prototype.addStartTiles = function () {

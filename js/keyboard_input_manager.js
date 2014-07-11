@@ -75,6 +75,8 @@ KeyboardInputManager.prototype.listen = function () {
   this.bindButtonPress(".retry-button", this.restart);
   this.bindButtonPress(".restart-button", this.restart);
   this.bindButtonPress(".keep-playing-button", this.keepPlaying);
+  // Respond to Slot presses
+  this.bindSlotPress(".slot-container", this.onSlotPress);
 
   // Respond to swipe events
   var touchStartClientX, touchStartClientY;
@@ -150,4 +152,18 @@ KeyboardInputManager.prototype.bindButtonPress = function (selector, fn) {
 
 KeyboardInputManager.prototype.targetIsInput = function (event) {
   return event.target.tagName.toLowerCase() === "input";
+};
+
+KeyboardInputManager.prototype.onSlotPress = function (event){
+  event.preventDefault();
+  this.emit("slotPressed", event.target.dataset.slot);
+};
+
+KeyboardInputManager.prototype.bindSlotPress = function(selector, fn){
+  var slots = document.querySelectorAll(selector);
+  for (var i = 0; i < slots.length; i++) {
+    slots[i].addEventListener("click", fn.bind(this));
+    slots[i].addEventListener(this.eventTouchend, fn.bind(this));
+    slots[i].dataset.slot = (i+1);
+  };
 };
